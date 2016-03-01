@@ -1,0 +1,486 @@
+*****************************************************************************
+        torad.man
+
+        This file is part of the program torad.lsp to export
+        RADIANCE scene description files from Autocad. 
+
+        Copyright (C) 1993 by Georg Mischler / Lehrstuhl
+                              fuer Bauphysik ETH Zurich.
+ 
+        Permission to use, copy, modify, and distribute this software
+        for any purpose and without fee is hereby granted, provided
+        that the above copyright notice appears in all copies and that
+        both that copyright notice and this permission notice appear in
+        all supporting documentation.
+ 
+        THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED
+        WARRANTY.  ALL IMPLIED WARRANTIES OF FITNESS FOR ANY PARTICULAR
+        PURPOSE AND OF MERCHANTABILITY ARE HEREBY DISCLAIMED.
+
+*****************************************************************************
+
+
+NAME
+    torad.lsp - Export facility from Autocad to RADIANCE scene description.
+
+
+
+DESCRIPTION
+    Software extension for Autocad to export data to the RADIANCE light
+    simulation package of the Lawrence Berkeley Laboratory.
+
+    Autocad entities can be selected and filtered by a series of options.
+
+    Entities will be sorted by one of the three criteria color, layer or
+    insertion layer of blocks (toplayer) according to your choice.
+    The sorting results in seperate files written for every layer or color.
+    Other files created optionally can contain initial material definitions
+    (all identical), a list of "!cat" commands to include all the
+    information to make up a complete scene description, a setup of natural
+    lighting, a view description and a makefile for automatic image creation.
+
+    Only the entities that are visible (that is their layer is on and thawed)
+    will be exported, even when nested in a selected block. This gives you
+    another method of filtering elements of your drawing especially usefull
+    when you want to update only part of a scene.
+
+    The layername or color number will be part of each respective filename
+    to make it an unique identifier. The pipe character "|" used by Autocad
+    within layernames associated with externally referenced blocks, as well
+    as the dollar sign "$" are replaced by an underscore "_" as they are
+    illegal or at least confusing characters for filenames on most systems.
+    On Dos systems separators such as those listed above are taken out,
+    the name is truncated to 6 letters and numbers are added to ensure the
+    name is unique.
+
+
+
+INSTALLATION
+    Torad.lsp can be loaded after you have copied the *.lsp/bi4, torad.dcl
+    and torad.mnu/x files to a location on your host which is included in
+    your Autocad search path. The method to specify or modify the necessary
+    environment variable ($ACAD) varies depending on the operating system.
+    You will have to quit and restart any Autocad still running for the
+    change to take effect.
+
+
+
+LOADING
+    Load the program by entering (load "torad[.bi4]") at the Autocad
+    command prompt or automatically by activating the TORAD section in the
+    screen menu area of the associated menu file.
+    It is recommended to use compiled code which runs significantly faster.
+    Autolisp files compiled with the compiler "acomp(.exe)" from Autodesk
+    for extended Autolisp usually have the extension "*.bi4".
+    The menu file associated with this program tries to load such files
+    first if they are present and supported by your version of Autolisp.
+    Otherwise the uncompiled lisp files are loaded.
+
+
+
+INTERFACE
+    The program is called by typing "torad" at the Autocad command prompt
+    or by selecting the "EXPORT" option in the associated screen menu
+    section.
+
+    There is a dialog box for Autocad 12 or later(?) which controls all
+    the necessary settings. For earlier versions the same control is
+    provided by text input or a screen menu section.
+
+    There are a number of toggles to switch on or off by entering "Yes"
+    or "No" in text mode or by selecting toggle buttons in the dialog box.
+    Some of the toggles affect the access to some of the others as it is
+    apropiate for writing only subsets of the possible data. In such a
+    case the respective prompts will be skipped or its input facilities
+    in the dialog box will be greyed out and so disabled.
+
+    The entity sampling and sampling mode options can be preset from the
+    screen section of the associated menu file. They are remembered for
+    the current Autocad editing session.
+
+    The layout of the dialog box is aproximated in the following graph.
+
+    _________________________________________________________________________ 
+   |                    torad - radiance export facility                     |
+   | _______________________________________________________________________ |
+   |                                                                         |
+   | _ sampled entities ______________   _ write filetypes _________________ |
+   ||  _                              | |  _                                ||
+   || |X| Planarized faces of 3DFACEs | | |X| Geometry information          ||
+   ||  _                              | |  _                                ||
+   || |X| Extruded and flat TRACEs    | | |_| Master-Control                ||
+   ||  _                              | |                                   ||
+   || |X| Extruded and flat SOLIDs    | |    WCS Rot. from E to X:   0.0    ||
+   ||  _                              | |     _                             ||
+   || |X| Extruded and flat CIRCLEs   | |    |X| Makefile                   ||
+   ||  _                              | |  _                                ||
+   || |X| Extruded faces of ARCs      | | |_| Materials (all same)          ||
+   ||  _                              | |  _             __                 ||
+   || |X| Extruded faces of LINEs     | | |_| View:     |\/| Current        ||
+   ||  _                              | |  _                                ||
+   || |X| Extruded faces of 2D-PLINEs | | |_| Sun at position:              ||
+   ||  _                              | |                                   ||
+   || |X| Constant width of 2D-PLINEs | | Long.:   -8.5     Month:  08      ||
+   ||  _                              | | Lat.:    47.5     Day:    01      ||
+   || |_| Closed 2s-polys as POLYGONs | | TZ.:     -1       Hour:   16.5    ||
+   ||  _                              | |___________________________________||
+   || |X| Faces of 3D-MESHes          |                                      |
+   ||  _                              |  _ sampling modes __________________ |
+   || |X| Faces of POLYFACES          | | Sample entities by:               ||
+   ||  _                              | |  _          _          _          ||
+   || |_| Points as SPHEREs or BUBBLEs| | |X| Color  |_| Layer  |_| Toplayer||
+   ||                                 | |                                   ||
+   ||                                 | | Seg./circle for arcs:    16       ||
+   ||_________________________________| |___________________________________||
+   |                                        ____________     ____________    |
+   | Path/filename prefix:  ./myfile       |_____OK_____|   |___Cancel___|   |
+   |_________________________________________________________________________|
+
+
+
+
+OPTIONS
+    Write Filetypes:
+        The following toggles and settings (upper right boxed column of the
+        dialog box) specify which kind of information to export:
+
+        Geometry information.
+            This switch is on by default for it is the generic purpose
+            of the program. Turning it off will disable the list of sampled
+            entity types and the master control file, makefile and material
+            file generation switches since they all don't make sense without.
+
+        Master Control.
+            The created file will contain all the necessary references to
+            the rest of the data so that "oconv" will be satisfied with
+            only this control file as its single argument.
+            This and the switches for materials, viewfile and sun are off
+            by default because you probably only want to use them when you
+            export a complete drawing for the first time.
+
+            Since it is not the goal of torad.lsp to make a full front end
+            to the RADIANCE package it will not maintain any of these files.
+            The information allready in there will be lost if you create
+            them new for every update of a part of a scene description.
+            In such a case you will have to edit these files manually to
+            keep them up to date.
+
+            WCS Rotation from East to X.
+                If your Autocad model is not aligned geograpically (so that
+                the X axis points towards east and the Y axis to north) then
+                you can specify the  difference as a rotation angle around
+                the Z axis in degrees here.
+                This will cause the sun definition (if any) to be loaded
+                with the apropriate "xform -rz ..." compensation.
+
+            Makefile.
+                The makefile will contain rules for octree conversion,
+                preview with rview and batch calculation with rpict.
+                Only minimal parameters are included to the commands so
+                you will have to edit this file as well, be it for high
+                resolution image generation or other customisations.
+
+        Materials.
+            Writes out a file of the materials. These have properties
+            as assigned by AutoVision or according to the AutoCAD
+            colour index (aci).
+
+        View:
+            This option enables a pop up list which contains the views
+            that have been saved previously in Autocad and the current
+            view. The one you select will be written to a file similar
+            to those written by rview which will then contain all the
+            information like viewtype, point, direction, angle and view
+            up vector. View angles larger or equal than 120 degrees will
+            generate a hemisperical fisheye view.
+            Please note that RADIANCE clips every polygon that reaches
+            behind the viewpoint.  This is often the case in parallel
+            views exported from Autocad where the viewpoint may be at a
+            very small offset from the world origin.
+
+        Sun at position and time.
+            This option will prompt you for the parameters of natural
+            lighting as required by gensky.
+            The default values are for Zurich (Switzerland) in the
+            afternoon of August the 1st (This may seem exotic to you but
+            not to me).
+
+
+    Sampling modes.
+        These settings (the lower right boxed column in the dialog box) let
+        you specify the way the geometrical information will be converted.
+
+        Sample entities by:
+            Select the sorting method here out of one of the following.
+
+            Color
+                The Autocad color number as visible on the screen.
+                This is the default and will help you when you organize
+                your drawing "visually".
+
+            Layer
+                The layer of every subentity (the one which this entity
+                is created on). Choose this method if you use a conceptual
+                layering system independently from screen display colors.
+
+            Toplayer
+                As above, except for entities within blocks which will be
+                treated as if beeing on the layer the block is inserted on.
+                Nested blocks will end all in the same file associated with
+                the layer of the outermost block.
+                This can be useful if you combine the use of (unnested)
+                block libraries with a seperate layer structuring system.
+
+            The concept of floating layers and colors within (nested)
+            blocks is fully supported. That means a subentity within a
+            block with the layer "0" and/or the color "byblock" will
+            appear on the layer and with the color of the containing block.
+            This continues recursively if the block has those properties as
+            well until a level with explicitly defined properties or the
+            top level block is reached.  Freestanding entities with the
+            color "byblock" are drawn with color nr. 7 (white).
+
+        Segmentation per circle for arcs:
+            Arc entities and arc segments of polylines have to be segmented
+            for the use in RADIANCE. The value you enter here specifies
+            how smooth these segments will appear in the final image.
+            Higher values will make smoother surfaces. The default of 16
+            is rather low but is set for reducing filesize. Make tests for
+            optimized settings because the appearance of the segments will
+            depend as well on the applied material as on the radius of any
+            specific arc.
+
+
+    Sampled Entities:
+        The following switches (the left boxed row in the dialog box) let
+        you specify which entity types you wish to extract from your
+        drawing and what kind of surface they should display. By default
+        all entities that make up a surface in Autocad (recognized by the
+        hide and shade/render commands) are switched on.
+        Others that just simplify modelling but are rendered differentely
+        in Autocad or in RADIANCE are off and have to be enabled by the
+        user explicitly.
+        All polygons should keep their orientation as created in Autocad
+        determined by the right hand rule as explained in the RADIANCE
+        tutorial.
+        Entities extruded by thickness will be inverted if their thickness
+        value (or "PDSIZE" for point entities) is negative.
+
+        The current export possibilities and their consequences are the
+        following:
+
+        Planarized faces of 3DFACEs.
+            3dfaces will be split to two triangular polygons if not planar.
+
+        Extruded and flat TRACEs.
+            Traces will appear as a single polygon or as a box if the
+            thickness is not zero.
+
+        Extruded and flat SOLIDs.
+            Solids will appear as a single polygon or as a box if the
+            thickness is not zero.
+
+        Extruded and flat CIRCLEs.
+            Circles will appear as a ring with a inner radius of zero
+            or as a cylinder/tube with a ring at either end if their
+            thickness is different from zero.
+
+        Extruded faces of ARCs.
+            Arcs with a thickness different from zero will be segmented
+            according to the given number of segments per full circle.
+
+        Extruded faces of LINEs.
+            Lines with a thickness different from zero will appear as a
+            single polygon.
+
+        Extruded faces of 2D-PLINEs.
+            2d-polylines with a thickness different from zero will appear
+            as a set of polygons.
+
+        Constant Width of 2D-PLINEs.
+            2d-polylines with a starting width different from zero set in
+            their header entity (not the vertexes!) will appear as a
+            polygon following the trace of the polyline with a constant
+            width. This option will override the following one for poly-
+            lines that match both categories (see below).
+            Together with a thickness and the respective option set this
+            will will result in a kind of a quadrilateral worm.
+
+        Closed 2d-polys as POLYGONs.
+            2d-polylines with the closed flag set in their header entity
+            will appear as a polygon of the shape of the polyline.
+            polylines with a width will not follow this rule if the
+            previous option is chosen as well (see above).
+            Together with a thickness and the respective option set this
+            will result in a prismatic volume of the shape of the polyline.
+            This option is off by default.
+
+        Faces of 3D-MESHEs.
+            The Faces of 3d-polygon meshes will appear as a set of
+            polygons ignoring spline fits of any kind. Nonplanar faces
+            will be split into two triangles.
+
+        Faces of POLYFACEs.
+            The faces of polyface meshes (from Autocad version 11 on) will
+            appear as a set of polygons. Nonplanar faces will be split
+            into two triangles. This option has no effect in environments
+            older than Autocad 11.
+
+        Points as SPHEREs or BUBBLEs.
+            Point entities will appear as spheres or bubbles depending on
+            either their thickness (if any) or else on the value of the
+            Autocad system variable "PDSIZE". if the result is zero the
+            entity is ignored.
+            This option is off by default.
+
+
+    Filename prefix:
+        The names of all output files (excluding the makefile) will start
+        with the string entered here. Default is the name of the drawing
+        file. The tilde "~" in a path name will be substituted for the
+        home directory ("$HOME" if present). On Dos systems a path
+        can be entered here, no filename prefix is used.
+
+    OK/Cancel buttons.
+        The OK button starts the exporting after you have selected the
+        entities you wish to extract. The Cancel button discards all the
+        setting you have made and terminates the program.
+        In the text dialog mode you can press <Control>-C to exit any time.
+
+
+
+DETAILS
+    Torad.lsp is optimized for speed and memory usage as far as possible
+    without losing the functionality of sorting entities to seperate files.
+    Therefore just the entity names are stored for sorting and geometry is
+    ignored until later. The drawback is that entity data has to be
+    extracted twice, once for sorting and once for writing (and maybe
+    even more for nested blocks).
+
+    The geometrical transformations are executed in one pass out of an
+    unlimited number of nested blocks as long as no multiple inserts are
+    involved.
+
+
+
+DIAGNOSTICS
+    Error messages and alert boxes are meant to be self explanatory.
+
+
+
+ENVIRONMENT
+    Autolisp variables of global scope:
+        *exportnsegs*   Number of segments per circle for arcs [int].
+        *exportsmode*   Sampling mode ["Color"|"Layer"|"Toplayer"].
+        *exporttruelays*
+                        Currently visible layers [list].
+        *exportentlist* Currently sorted entities [assoc.list].
+        *exportblocklist*
+                        Currently sorted blocks [assoc.list].
+        *valuablepolylist*
+                        Currently writeable entity types [list_of_strings].
+        *col*           Color number used for graphical debugging [int].
+
+        *toraddlgpos*   Last position of the dialog box ['(intx, inty)].
+        *toradfilelist* List of filetypes and values to write [assoc.list].
+        *toradetypes*   List of possible types and text entry prompts.
+        *toradtypelist* Default list of entity types [list_of_strings].
+        *torad_error*   Exception handler [function].
+        *torad_preverr* Old exception handler for reinstalling [function].
+        *FILE*          Current open file [filedesc].
+        $REASON         Control variable for dialog box (in fact local).
+        BD4A            Function defined by Autolisp for compiler support.
+        *dos*           True if running Dos   -the following added by reg-
+        *unix*          True if running under unix
+        *filepath*      Directory that the drawing is in
+        *filename*      Name of the drawing
+        *exportlaycol*  As for *exporttruelays* except includes layer colour
+        *rad_mats*      List of materials and their properties ready for export
+
+    Operating system environment:
+        HOME            Home directory used for tilde replacement.
+        ACAD            List of directories where Autocad looks for
+                        supporting files.
+
+LIST FORMAT -by reg-
+        *exportentlist* ( (aci1 ent1 ent2 ...) (aci2 ent1 ent2 ...) )
+                     or ( (lay1 ent1 ent2 ...) (lay2 ent1 ent2 ...) )
+
+        matlist      ( (layname radname radfname (property list)) ...)
+              replaced with...
+        totobjlist ( (objname matname radfname (property list)) ...)
+
+       *exporttruelays* ( "layername1" "layername2" ...)
+        *exportlaycol*   ( ("layername1" colour) ("layername2" colour)...)
+
+               *rad_mats* ( (matname aci_attachment ents_attachments
+                           R G B roughness reflectance_modifier) ...)
+
+FILES
+    Program files:
+        torad.lsp       Main program source file.
+        esample.lsp     Entities sampling and conversion source file.
+        vector.lsp      Geometrical utilities source file.
+        torad.dcl       Dialog box definition file for Autocad 12.
+        torad.mnu/x     Menu file for setup with Autocad 10/11.
+    Additional Files:
+        torad.man       This File.
+        torad.README    general info.
+
+    Data files:
+        (<prefix>)<layername>(<number).rad
+                        Geometry data written with the Layer or Toplayer
+                        samplemodes set.
+        <prefix>c_<colornumber>.rad
+                        Geometry data written with the Color samplemode set.
+        <prefix or drawing name>.rad    Control file organizing the various data together
+                        for a complete RADIANCE scene description.
+        <prefix or drawing name>.mat    Material definitions (all same) for manual editing.
+        <prefix or drawing name>.vf   View file.
+        <prefix or drawing name>.sun    Daylight source definitions.
+        makefile        Rule definitions for the UNIX utility make.
+
+
+
+REQUIREMENTS
+    Torad.lsp is meant to run with most versions of Autocad on any hardware
+    Autocad runs on. Naturally, polyface meshes will not be extracted from
+    version earlier than 11 drawings since they simply don't exist there.
+    The dialog box control is unique to version 12 up to now. With other
+    versions the setup is done by text input and the screen menu.
+
+
+
+CAVEATS
+    Please note that the AME solid modelling package by Autodesk generates
+    surfaces with surface normals pointing to the inside of the created
+    volumes (at least most of the times...).
+
+
+
+BUGS
+    There is no support yet for creating instances out of uniformly
+    scaled blocks (RADIANCE does not support nonuniform scaling anyway).
+
+
+
+AUTHOR
+    Georg Mischler
+
+
+
+ACKNOWLEDGEMENTS
+    Final developement of this program has been sponsored by Prof. Dr.
+    B. Keller, Building Physics, Dep. for Architekture ETH Zurich.
+    The developement environment has been provided by Prof. Dr.
+    G. Schmitt, Architecture & CAAD ETH Zurich.
+
+
+
+SEE ALSO
+    Autolisp Programmers References, Reference Manuals and Customisation
+    Guides for Autocad Versions 10/11/12, AutoDesk Inc.
+    Tutorial and manual pages of RADIANCE 2.1, Synthetic Imaging System.
+    Greg Ward, Lawrence Berkeley Laboratory, Berkeley, CA.
+
+*****************************************************************************
