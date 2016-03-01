@@ -1,0 +1,125 @@
+***************************************************************************** 
+        torad.README
+ 
+        This file is part of the program torad.lsp to export
+        RADIANCE scene description files from Autocad.
+ 
+        Copyright (C) 1993 by Georg Mischler / Lehrstuhl
+                              fuer Bauphysik ETH Zurich.
+ 
+        Permission to use, copy, modify, and distribute this software
+        for any purpose and without fee is hereby granted, provided
+        that the above copyright notice appears in all copies and that
+        both that copyright notice and this permission notice appear in
+        all supporting documentation.
+
+        THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED
+        WARRANTY.  ALL IMPLIED WARRANTIES OF FITNESS FOR ANY PARTICULAR
+        PURPOSE AND OF MERCHANTABILITY ARE HEREBY DISCLAIMED.
+
+*****************************************************************************
+
+General info:
+    
+    torad.lsp
+        
+    Software extension for Autocad to export data to the RADIANCE light
+    simulation package of the Lawrence Berkeley Laboratory.
+
+    Makes complete translation of all hiding/shading entities from
+    Autocad (and some more). 
+
+    Entities can be selected on screen for partial export.
+
+    Entities will be sorted by one of the three criteria color, layer or
+    insertion layer of blocks (toplayer) according to your choice.
+    The sorting results in seperate files written for every layer or color.
+    Floating layers and colors within blocks are fully supported.
+
+    Other files created optionally can contain initial material definitions
+    (all identical), a list of "!cat" commands to include all the
+    information to make up a complete scene description, a setup of natural
+    lighting, a view description and a makefile for automatic image creation.
+
+    Only the entities that are visible (that is their layer is on and thawed)
+    will be exported, even when nested in a selected block. This gives you
+    another method of filtering elements of your drawing especially usefull
+    when you want to update only part of a scene.
+
+    The layername or color number will be part of each respective filename
+    to make it an unique identifier.
+
+    You have full control through a sreen menu section, a text dialog
+    or even a interactive dialog box if you are running Autocad 12.
+
+
+    Entities exported (by choice):
+
+    Autocad entities:            radiance objects:
+
+    - 3dfaces                    -  triangular or quadrilateral polygons.
+    - extruded or flat traces    -  triangular and/or quadrilateral polygons.
+    - extruded or flat solids    -  triangular and/or quadrilateral polygons.
+    - extruded or flat circles   -  rings and quadrilateral polygons.
+    - extruded arcs              -  quadrilateral polygons.
+    - extruded lines             -  quadrilateral polygons.
+    - extruded 2d-plines         -  quadrilateral polygons.
+    - wide 2d-plines             -  multilateral polygons.
+    - closed 2d-plines           -  multilateral polygons.
+    - 3d-meshes                  -  triangular or quadrilateral polygons.
+    - polyfaces                  -  triangular or quadrilateral polygons.
+    - points                     -  spheres or bubbles.
+
+
+    torad.lsp is optimized for speed and memory usage as far as possible
+    without loosing the functionality of sorting entities to seperate files.
+    If you still consider it to be too slow, you will have to rewrite it
+    in C (or pay me for doing so ;-).
+
+    But still, it really works!
+
+
+    the complete program consists of eight files (up to the moment):
+
+    Program files:
+        torad.lsp       Main program source file.
+        esample.lsp     Entities sampling and conversion source file.
+        vector.lsp      Geometrical utilities source file.
+        torad.dcl       Dialog box definition file for Autocad 12.
+        torad.mnu/x     Menu file for setup with Autocad 10/11.
+
+    Additional Files: 
+        torad.man       User manual. 
+        torad.README    This file. 
+
+    All these files are packaged in both a compressed tar file and a
+    zip archieve to make them easily accessible for users of each unix
+    and dos systems.
+
+
+*****************************************************************************
+
+"support"
+    I expect the program and the manual to be self explanatory for users
+    who have at least some experiance with either Autocad, Radiance or
+    better both of them. If there still remain questions that cannot be
+    answered neither through the manuals of Autocad, RADIANCE or torad.lsp
+    nor by the local guru, you might try to reach me by mail under
+    <schorsch@www.schorsch.com>.
+    Be sure to notify me if you think you have found a bug in this program
+    (there still might be some although thoroughly tested).
+    It may happen that you will have to wait a few days for an answer since
+    I am more like a guest at this site and therefore can not garantee
+    to look into my mail daily.
+
+    Georg Mischler
+
+*****************************************************************************
+
+ACKNOWLEDGEMENTS
+    Final developement of this program has been sponsored by Prof. Dr.
+    B. Keller, Building Physics, Dep. for Architekture ETH Zurich.
+    The developement environment has been provided by Prof. Dr.
+    G. Schmitt, Architecture & CAAD ETH Zurich.
+
+*****************************************************************************
