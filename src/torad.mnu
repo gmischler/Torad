@@ -1,0 +1,165 @@
+***Comment
+
+        torad.mnu
+
+        This file is part of the program torad.lsp to export
+        RADIANCE scene description files from Autocad.
+
+        Copyright (C) 1993 by Georg Mischler / Lehrstuhl
+                              fuer Bauphysik ETH Zurich.
+
+        Permission to use, copy, modify, and distribute this software
+        for any purpose and without fee is hereby granted, provided
+        that the above copyright notice appears in all copies and that
+        both that copyright notice and this permission notice appear in
+        all supporting documentation.
+
+        THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED
+        WARRANTY.  ALL IMPLIED WARRANTIES OF FITNESS FOR ANY PARTICULAR
+        PURPOSE AND OF MERCHANTABILITY ARE HEREBY DISCLAIMED.
+
+        Acknowlegdements:
+        Final developement of this program has been sponsored by Prof. Dr.
+        B. Keller, Building Physics, Dep. for Architekture ETH Zurich.
+        The developement environment has been provided by Prof. Dr.
+        G. Schmitt, Architecture & CAAD ETH Zurich.
+
+
+***BUTTONS1
+;
+^C^C
+^B
+^O
+^G
+^D
+^E
+^T
+
+***BUTTONS2
+$p0=*
+
+***AUX1
+;
+^C^C
+^B
+^O
+^G
+^D
+^E
+^T
+
+***AUX2
+$p0=*
+
+***POP0
+[Osnap]
+
+***POP1
+[File]
+
+***POP2
+[Assist]
+
+***POP3
+[Draw]
+
+***POP4
+[Construct]
+
+***POP5
+[Modify]
+
+***POP6
+[View]
+
+***POP7
+[Settings]
+
+***POP8
+[Render]
+
+***POP9
+[Model]
+
+
+***SCREEN
+**S
+[AutoCAD]^C^C^P(ai_rootmenus) ^P
+[* * * *]$S=OSNAPB
+[]
+[]
+[]
+[TORAD:]^C^C^P(progn (if (null c:torad)(or (and BD4A (load "torad.bi4" NIL))+
+(load "torad" NIL)) )(princ)) $S=X $S=TORADs torad
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+[]
+
+**TORADs 3
+[]
+[EXPORT->]
+[RADIANCE]
+[]
+[ENTITIES]^C^C^P(progn (toradshowitems T) (princ))
+[--------]
+[  3dFace]^P(progn (toradsetitem "3DFACE"  T) (princ))
+[   Trace]^P(progn (toradsetitem "TRACE"   T) (princ))
+[   Solid]^P(progn (toradsetitem "SOLID"   T) (princ))
+[  Circle]^P(progn (toradsetitem "CIRCLE"  T) (princ))
+[     Arc]^P(progn (toradsetitem "ARC"     T) (princ))
+[thikLine]^P(progn (toradsetitem "LINE"    T) (princ))
+[thikPlin]^P(progn (toradsetitem "PLINE"   T) (princ))
+[widePlin]^P(progn (toradsetitem "WPLINE"  T) (princ))
+[ Polygon]^P(progn (toradsetitem "POLYGON" T) (princ))
+[  3dMesh]^P(progn (toradsetitem "PMESH"   T) (princ))
+[PolyFace]^P(progn (toradsetitem "PFACE"   T) (princ))
+[   Point]^P(progn (toradsetitem "POINT"   T) (princ))
+[]
+[MODES   ]
+[--------]
+[smplMode]^P(progn (setradsamplemode T) (princ))
+[#of Segs]^P(progn (setradnumsegs T) (princ))
+[]
+[********]
+[ EXPORT ]^C^Ctorad
+[********]
+[]
+[]
+[__LAST__]$S= $S=
+[]
+[]
+[]
+[]
+
+***Comment
+        end of torad.mnu
