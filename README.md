@@ -2,7 +2,7 @@
 Torad is an Autolisp application for Autocad for exporting geometry data to the
 <a href="http://www.radiance-online.org/">Radiance</a> lighting simulation package.
 
-<i>Note: This is here mainly for historical purposes. Please consider using <a href="/en/download/radout/">radout</a> instead. </i>
+<i>Note: This is here mainly for historical purposes (created 1993). Please consider using <a href="/en/download/radout/">radout</a> instead. </i>
 
 Basic features of torad are:
 
